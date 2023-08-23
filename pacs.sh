@@ -19,7 +19,12 @@ if [[ "$*" == *"-s"* ]]; then
     pacman -Ss "$searchterm" | grep -i ".*/" | sed "s/.*\/\(.*\)[[:space:]].*$/\1/g" | sed "s/[[:space:]].*//g"
     exit
 fi
-
+if [[ "$*" == *"-h"* ]]; then
+echo -e "\n==========\npacs help:\n=========="
+    echo -e "${BLUE}-s ${WHITE}Simple mode, return only matching packagenames."
+    echo -e "${BLUE}-i${WHITE} Installer Mode, pacs will number the list of packages, allowing you to quickly install one or more packages. Under the hood this uses pacman -Sy --noconfirm.\n"
+    exit
+fi
 pacman -Ss "$searchterm" >> pacmansearch.tmp
 while read -r line
 do
