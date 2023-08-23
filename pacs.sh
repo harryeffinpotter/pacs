@@ -12,6 +12,7 @@ choice=0
 alternate=0
 installmode=0
 rm -rf paclist.tmp
+rm -rf pacmansearch.tmp
 searchterm="$(echo "$*" | sed "s/[[:space:]]-.*//g" )"
 if [[ "$*" == *"-i"* ]]; then
     installmode=1
