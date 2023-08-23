@@ -15,6 +15,10 @@ searchterm="$(echo "$*" | sed "s/[[:space:]]*-.*//g" )"
 if [[ "$*" == *"-i"* ]]; then
     installmode=1
 fi
+if [[ "$*" == *"-s"* ]]; then
+    pacman -Ss "$searchterm" | grep -i ".*/" | sed "s/.*\/\(.*\)[[:space:]].*$/\1/g" | sed "s/[[:space:]].*//g"
+    exit
+fi
 
 pacman -Ss "$searchterm" >> pacmansearch.tmp
 while read -r line
