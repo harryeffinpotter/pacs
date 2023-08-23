@@ -11,7 +11,8 @@ GOLD='\033[1;31m'
 choice=0
 alternate=0
 installmode=0
-searchterm="$(echo "$*" | sed "s/[[:space:]]*-.*//g" )"
+rm -rf paclist.tmp
+searchterm="$(echo "$*" | sed "s/[[:space:]]-.*//g" )"
 if [[ "$*" == *"-i"* ]]; then
     installmode=1
 fi
