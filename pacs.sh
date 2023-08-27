@@ -1,9 +1,34 @@
-
 #!/bin/sh
+
+# INFO.
+
+# chmod +x if you get permission denied error.
+# --noconfirm is enabled with interactive package installer by default/.
+
+
+# Syntax = ./pacs.sh <partial package name> <flags>
+# E.G.: ./pacs.sh zsh -s, ./pacs.sh php -i, ./pacs.sh haste
+
+
+# RECOMMENDED:
+# Add this to pacs function below to ~/.zshrc for ez search.
+# E.G.: pacs zsh -s, pacs php -i, pacs haste
+
+
+#  pacs(){
+#      # Whever you clones the pacs repo to.
+#      # $0 = entire script path, $1 = first argument, $* = all arguments (does not include script path).
+#      ~/pacs/pacs.sh "$*"
+#  }
+
+
+# pacs -h to show help.
+
+
 startdir="$PWD"
 cd ~
-BLUE='\033[1;34m' 
-WHITE='\033[0;37m' 
+BLUE='\033[1;34m'
+WHITE='\033[0;37m'
 RED='\033[1;31m'
 PURPLE='\033[1;35m'
 GREEN='\033[1;32m'
@@ -19,6 +44,7 @@ if [[ "$*" == *"-i"* ]]; then
 fi
 if [[ "$*" == *"-s"* ]]; then
     pacman -Ss "$searchterm" | grep -i ".*/" | sed "s/.*\/\(.*\)[[:space:]].*$/\1/g" | sed "s/[[:space:]].*//g"
+    yay -Ss "$searchterm" | grep -i ".*/" | sed "s/.*\/\(.*\)[[:space:]].*$/\1/g" | sed "s/[[:space:]].*//g"
     exit
 fi
 if [[ "$*" == *"-h"* ]]; then
@@ -27,9 +53,16 @@ echo -e "\n==========\npacs help:\n=========="
     echo -e "${BLUE}-i${WHITE} Installer Mode, pacs will number the list of packages, allowing you to quickly install one or more packages. Under the hood this uses pacman -Sy --noconfirm.\n"
     exit
 fi
+balls=""
+both=0
+pkg=""
+desc=""
+full=""
 pacman -Ss "$searchterm" >> pacmansearch.tmp
+yay -Ss "$searchterm" >> pacmansearch.tmp
 while read -r line
 do
+    is_aur=0
     if (( $alternate == 0 )); then
         GREEN='\033[1;32m'
         alternate=1
@@ -38,32 +71,35 @@ do
         alternate=0
     fi
     if [[ "$line" == *"/"* ]]; then
+        both=0
+        if [[ "$line" == *"aur"* ]]; then
+            is_aur=1
+        fi
         pkg="$(echo -e "${BLUE}$line" | sed 's/.*\///g' | sed 's/[[:space:]].*$//g')"
     else
+        both=1
         desc="$(echo -e "${WHITE}$line" | sed 's/\s*\(.*\)/\1/g')"
     fi
-    if (( $installmode == 1)); then
-        ((choice++))
-        echo -e "${BLUE}${choice}.${GREEN} ${pkg} - ${WHITE}${desc}"
-        echo -e "${choice}.${pkg}" >> paclist.tmp
-    else
-        echo -e "${GREEN}${pkg} - ${WHITE}${desc}"
+    if (( both == 1 )); then
+        full="$GREEN$pkg - $WHITE$desc"
+        if (( $installmode == 1)); then
+            ((choice++))
+            ballsnew="$BLUE$choice. $full"
+            balls="$balls\n$ballsnew"
+            if  (( $is_aur == 1 )); then
+            echo -e "$choice. !$pkg" >> paclist.tmp
+            else
+            echo -e "$choice. $pkg" >> paclist.tmp
+            fi
+        else
+            balls="$balls\n$full"
+        fi
     fi
 done < "pacmansearch.tmp"
-rm -rf pacmansearch.tmp
-
-
+echo -e "$balls" | column
 if  (( $installmode == 1 )); then
-
-    echo -e "\n${PURPLE}============\n${PURPLE}Install mode\n${PURPLE}============${WHITE}"
-    echo -e "You can install from the list using one of the 2 supported methods below."
-    echo -e "NOTE: Using multiple ranges or using method 1 and 2 at the same time is not yet supported.\n"
-    echo -e "You can enter multiple numbers separated by spaces or commas, like this-"
-    echo -e "${RED}1, 5, 6"
-    echo -e "2 45 1"
-    echo -e "34"
-    echo -e "\n${WHITE}Or you can enter a range, like this-\n${RED}12-26\n1-45\n${BLUE}"
-read -p "Choose package numbers[(Q)uit]: " installs
+    echo -e "\n$PURPLE\nEnter range or indvidual numbers.$BLUE"
+    read -p "Choose package numbers (6-32, 4 6 25, [Q]uit): " installs
     echo -e "${WHITE}"
     if [ -n "$installs" ]; then
         if [[ "$installs" == *"Q" || "$installs" == *"q" ]];  then
@@ -77,17 +113,23 @@ read -p "Choose package numbers[(Q)uit]: " installs
                 highnumber=$( echo "$numbers" | sed 's/.*-//g')
                 while (( $lownumber <= $highnumber )); do
                     package=$( cat paclist.tmp | grep -i "^$lownumber\." | sed "s/$lownumber\.//g" )
-                    echo -e  "$package"
-                    sudo pacman -Sy ${package} --noconfirm
+                    if echo $package | sed 's/!//g'; then
+                        yay -S ${package} --noconfirm
+                    else
+                        sudo pacman -Sy ${package} --noconfirm
+                    fi
                     ((lownumber++))
                 done
             else
                 commagone=$( echo "$numbers" | sed 's/,//g' )
                 arr=($commagone)
                 for i in "${arr[@]}"; do
-                     package=$( cat paclist.tmp | grep -i "^${i}\." | sed "s/${i}.//g" )
-                     echo -e "WILL BE INSTALLING - $package"
-                     sudo pacman -Sy ${package} --noconfirm
+                    package=$( cat paclist.tmp | grep -i "^${i}\." | sed "s/${i}.//g" )
+                    if echo $package | sed 's/!//g'; then
+                        yay -S ${package} --noconfirm
+                    else
+                        sudo pacman -Sy ${package} --noconfirm
+                    fi
                 done
             fi
         fi
@@ -96,3 +138,4 @@ read -p "Choose package numbers[(Q)uit]: " installs
 fi
 
 cd "$startdir"
+ 
