@@ -50,7 +50,7 @@ fi
 if [[ "$*" == *"-h"* ]]; then
 echo -e "\n==========\npacs help:\n=========="
     echo -e "${BLUE}-s ${WHITE}Simple mode, return only matching packagenames."
-    echo -e "${BLUE}-i${WHITE} Installer Mode, pacs will number the list of packages, allowing you to quickly install one or more packages. Under the hood this uses pacman -Sy --noconfirm.\n"
+    echo -e "${BLUE}-i${WHITE} Installer Mode, pacs will number the list of packages, allowing you to quickly install one or more packages. Under the hood this uses pacman -Sy --noconfirm --overwrite.\n"
     exit
 fi
 balls=""
@@ -116,7 +116,7 @@ if  (( $installmode == 1 )); then
                     if echo $package | sed 's/!//g'; then
                         yay -S ${package} --noconfirm
                     else
-                        sudo pacman -Sy ${package} --noconfirm
+                        sudo pacman -Sy ${package} --noconfirm --overwrite
                     fi
                     ((lownumber++))
                 done
@@ -128,7 +128,7 @@ if  (( $installmode == 1 )); then
                     if echo $package | sed 's/!//g'; then
                         yay -S ${package} --noconfirm
                     else
-                        sudo pacman -Sy ${package} --noconfirm
+                        sudo pacman -Sy ${package} --noconfirm --overwrite
                     fi
                 done
             fi
