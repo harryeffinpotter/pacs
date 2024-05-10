@@ -8,11 +8,9 @@ The interactive installer(`-i) *runs the install commands with the flag --noconf
 
 
 INSTALLATION:
-`cd ~`
-
-`git clone https://github.com/harryeffinpotter/pacs`
-
-`chmod +x ~/pacs/pacs.sh`
+```cd ~
+git clone https://github.com/harryeffinpotter/pacs
+chmod +x ~/pacs/pacs.sh```
 
 Add this pacs function to ~/.zshrc for ez search.
 E.G.: pacs zsh -s, pacs php -i, pacs haste
